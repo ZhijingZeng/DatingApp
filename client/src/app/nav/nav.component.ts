@@ -21,14 +21,13 @@ export class NavComponent implements OnInit {
 
   login(){
 
-    if (Object.keys(this.model).length === 0) {
-      this.toastr.error('Please fill in the information');
+    if (!this.model.username) {
+      this.toastr.error('Please fill in the username');
        return;
     }
 
     this.accountService.login(this.model).subscribe({
-      next: _ => this.router.navigateByUrl('/members'), //no argument
-      error: error => this.toastr.error(error.error)
+      next: _ => this.router.navigateByUrl('/members') //no argument
     })
     //http request after completed automatically unsubscribe
   }
