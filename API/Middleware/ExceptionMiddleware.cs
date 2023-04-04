@@ -23,6 +23,7 @@ namespace API.Middleware
             {
                 await _next(context);
             }
+            // return our own exception
             catch(Exception ex)
             {
                 _logger.LogError(ex,ex.Message);

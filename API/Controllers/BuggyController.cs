@@ -18,7 +18,7 @@ namespace API.Controllers
             _context = context;
         }
 
-        [Authorize]
+        [Authorize] //able to go after logging in
         [HttpGet("auth")]
         public ActionResult<string> GetSecret()
         {
