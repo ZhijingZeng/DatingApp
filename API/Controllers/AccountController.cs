@@ -21,6 +21,7 @@ namespace API.Controllers
         }
         [HttpPost("register")] //POST: api/account/register
         public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
+
         {
             if (await UserExists(registerDto.Username)) return BadRequest("Username is taken");
             using var hmac = new HMACSHA512();
@@ -46,7 +47,7 @@ namespace API.Controllers
             using var hmac = new HMACSHA512(user.PasswordSalt);
             var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(loginDto.Password));
             if (computedHash.Length != user.PasswordHash.Length) 
-                return Unauthorized("invalid length");
+                return Unauthorized("invalid password (length)");
             for(int i=0; i<computedHash.Length; i++)
             {
                 if(computedHash[i] != user.PasswordHash[i]) return Unauthorized("invalid password");

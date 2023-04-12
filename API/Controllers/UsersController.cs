@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using API.Data;
 using API.DTOs;
 using API.Entities;
@@ -6,6 +7,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace API.Controllers
 {
@@ -34,6 +36,17 @@ namespace API.Controllers
         public async Task<ActionResult<MemberDto>> GetUser(string username)
         {
             return await _userRepository.GetMemberAsync(username);
+        }
+        [HttpPut]
+        public async Task<ActionResult> UpdateUser(MemberUpdateDto memberUpdateDto)
+        {
+            var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; //username inside token, User system security claim principle have access to token
+            var user= await _userRepository.GetUserByUsernameAsync(username);
+            if(user ==null) return NotFound();
+            _mapper.Map(memberUpdateDto,user);//updating all properties in memberUpdateDto=>user
+            if(await _userRepository.SaveAllAsync()) //update to the database
+                return NoContent(); //everything is ok but I have nothing to send back to you 204
+            return BadRequest("Failed to update user");//if no changes then it is a bad request
         }
     }
 }
