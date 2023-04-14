@@ -25,7 +25,7 @@ namespace API.Data
             
             return await _context.Users
                 .Where(x => x.UserName == username)
-                .ProjectTo<MemberDto>(_mapper.ConfigurationProvider)
+                .ProjectTo<MemberDto>(_mapper.ConfigurationProvider)//help to eagerly load the related entites
                 .SingleOrDefaultAsync();
         }
 
@@ -66,3 +66,12 @@ namespace API.Data
         }
     }
 }
+// 1.A client application requests a list of members from a web API endpoint.
+
+// 2.The web API controller invokes a method on the repository interface to retrieve the list of members.
+
+// 3.The repository class retrieves the member entities from the data storage system (e.g., database), and maps them to a list of MemberDTOs.
+
+// 4.The repository class returns the list of MemberDTOs to the web API controller.
+
+// 5.The web API controller maps the list of MemberDTOs to a JSON response, and returns it to the client application.

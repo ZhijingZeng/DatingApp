@@ -2,6 +2,7 @@ using System.Security.Claims;
 using API.Data;
 using API.DTOs;
 using API.Entities;
+using API.Extensions;
 using API.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
@@ -16,8 +17,10 @@ namespace API.Controllers
     {
         private readonly IMapper _mapper;
         private readonly IUserRepository _userRepository;
-        public UsersController(IUserRepository userRepository,IMapper mapper)
+        private readonly IPhotoService _photoService;
+        public UsersController(IUserRepository userRepository,IMapper mapper, IPhotoService photoService)
         {
+            _photoService = photoService;
             _mapper = mapper;
             _userRepository = userRepository;
         }
@@ -37,10 +40,10 @@ namespace API.Controllers
         {
             return await _userRepository.GetMemberAsync(username);
         }
-        [HttpPut]
+        [HttpPut] //update
         public async Task<ActionResult> UpdateUser(MemberUpdateDto memberUpdateDto)
         {
-            var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; //username inside token, User system security claim principle have access to token
+            var username = User.GetUsername(); //username inside token, User system securityClaimPrinciple have access to token, GetUsername see extension method
             var user= await _userRepository.GetUserByUsernameAsync(username);
             if(user ==null) return NotFound();
             _mapper.Map(memberUpdateDto,user);//updating all properties in memberUpdateDto=>user
@@ -48,5 +51,95 @@ namespace API.Controllers
                 return NoContent(); //everything is ok but I have nothing to send back to you 204
             return BadRequest("Failed to update user");//if no changes then it is a bad request
         }
+
+
+        [HttpPost("add-photo")]
+        public async Task<ActionResult<PhotoDto>> AddPhoto (IFormFile file)
+        {
+            var user= await _userRepository.GetUserByUsernameAsync(User.GetUsername());
+            if(user == null) return NotFound();
+            var result = await  _photoService.AddPhotoAsync(file);
+            if(result.Error != null) return BadRequest(result.Error.Message);
+            var photo = new Photo{
+                Url = result.SecureUrl.AbsoluteUri,
+                PublicId = result.PublicId
+            };
+            if(user.Photos.Count ==0) photo.IsMain = true;
+            user.Photos.Add(photo);
+            if(await _userRepository.SaveAllAsync()) {
+                return CreatedAtAction(nameof(GetUser), 
+                new {username = user.UserName}, _mapper.Map<PhotoDto>(photo));
+            }
+            //return _mapper.Map<PhotoDto>(photo);
+            return BadRequest("Problem adding photo");
+
+        }
+
+        [HttpPut("set-main-photo/{photoId}")]
+        public async Task<ActionResult> SetMainPhoto (int photoId)
+        {
+            var user= await _userRepository.GetUserByUsernameAsync(User.GetUsername());
+            if(user == null) return NotFound();
+            var photo = user.Photos.FirstOrDefault(x=> x.Id == photoId);
+            if(photo == null) return NotFound();
+            if(photo.IsMain) return BadRequest("this is already your main photo");
+            var currentMain = user.Photos.FirstOrDefault(x=>x.IsMain);
+            if(currentMain != null) currentMain.IsMain =false;
+            photo.IsMain = true;
+
+            if(await _userRepository.SaveAllAsync()) return NoContent();
+            return BadRequest("Problem setting the main photo");
+
+        }
+        [HttpDelete("delete-photo/{photoId}")]
+        public async Task<ActionResult> DeletePhoto (int photoId)
+        {
+            var user= await _userRepository.GetUserByUsernameAsync(User.GetUsername());
+            //if(user == null) return NotFound();
+            var photo = user.Photos.FirstOrDefault(x=> x.Id == photoId);
+            if(photo == null) return NotFound();
+            if(photo.IsMain) return BadRequest("You cannot delete your main photo");
+            if(photo.PublicId != null)
+            {
+                var result = await _photoService.DeletePhotoAsync(photo.PublicId);
+                if(result.Error != null) return BadRequest(result.Error.Message);
+            }
+            user.Photos.Remove(photo);
+            if(await _userRepository.SaveAllAsync() ) return Ok();
+            return BadRequest("Problem deleting photo");
+        }   
     }
 }
+
+// 1.A client application requests a list of members from a web API endpoint.
+
+// 2.The web API controller invokes a method on the repository interface to retrieve the list of members.
+
+// 3.The repository class retrieves the member entities from the data storage system (e.g., database), and maps them to a list of MemberDTOs.
+
+// 4.The repository class returns the list of MemberDTOs to the web API controller.
+
+// 5.The web API controller maps the list of MemberDTOs to a JSON response, and returns it to the client application.
+
+
+//http code
+//https://www.restapitutorial.com/httpstatuscodes.html
+//2** good request
+//200 ok
+//201 (post request) created, return the address where to get the new resource
+//204 No content(everything went well, nothing need to be returned. such as delete, put)
+
+//3** 
+//304 not modified (when you call the api, has this been changed since yesterday. Then we don't need to download anything, pull it from the cach you have)
+
+//4** client error
+//400 bad request Your information is bad. Such as name and email only given name
+//401 unauthorized. No Idea who you are
+//403 forbidden know who you are but you donot have the permission(basic user sent an api key but do not have the permission to the admin credencial)
+//404 not found there is no api you are looking for
+//5** server error
+
+
+
+
+
