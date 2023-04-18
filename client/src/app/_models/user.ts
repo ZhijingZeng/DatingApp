@@ -2,6 +2,8 @@ export interface User{
     username:string;
     token:string;
     photoUrl: string;
+    knownAs: string;
+    gender: string;
 }
 //different from Member:
 //member is what they want to show to the audience : interest, age, ...

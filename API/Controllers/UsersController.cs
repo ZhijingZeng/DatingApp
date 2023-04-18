@@ -1,14 +1,11 @@
-using System.Security.Claims;
-using API.Data;
 using API.DTOs;
 using API.Entities;
 using API.Extensions;
+using API.Helpers;
 using API.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace API.Controllers
 {
@@ -26,9 +23,19 @@ namespace API.Controllers
         }
         //[AllowAnonymous]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers()
+        public async Task<ActionResult<PagedList<MemberDto>>> GetUsers([FromQuery]UserParams userParams)
+        //client will send userParams from query string, we need to specify where api will need to look 
         {
-            var users = await _userRepository.GetMembersAsync();
+            var currentUser = await _userRepository.GetUserByUsernameAsync(User.GetUsername());
+            userParams.CurrentUsername = currentUser.UserName;
+
+            if(string.IsNullOrEmpty(userParams.Gender))
+            {
+                userParams.Gender = currentUser.Gender =="male" ? "female":"male";
+            }
+
+            var users = await _userRepository.GetMembersAsync(userParams);
+            Response.AddPaginationHeader(new PaginationHeader(users.CurrentPage, users.PageSize,users.totalCount,users.TotalPages));
             //var usersToReturn = _mapper.Map<IEnumerable<MemberDto>>(users);
             return Ok(users);
 
@@ -67,8 +74,9 @@ namespace API.Controllers
             if(user.Photos.Count ==0) photo.IsMain = true;
             user.Photos.Add(photo);
             if(await _userRepository.SaveAllAsync()) {
-                return CreatedAtAction(nameof(GetUser), 
+                return CreatedAtAction(nameof(GetUser), //can call endpoint as Actions
                 new {username = user.UserName}, _mapper.Map<PhotoDto>(photo));
+                //return back how can we get this newly created photo
             }
             //return _mapper.Map<PhotoDto>(photo);
             return BadRequest("Problem adding photo");
