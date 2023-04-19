@@ -12,10 +12,10 @@ import { User } from '../_models/user';
   providedIn: 'root'
 })
 export class MembersService {
-
+  a=0;
   baseUrl = environment.apiUrl
   members: Member[] = [];
-  memberCache = new Map(); //storing in key value
+  private memberCache = new Map(); //storing in key value
   user: User | undefined;
   userParams: UserParams | undefined;
   constructor(private http: HttpClient, private accountService: AccountService) {
@@ -39,13 +39,17 @@ export class MembersService {
 
   resetUserParams(){
     if(this.user){
-      console.log('inside reset filters')
       this.userParams = new UserParams(this.user);
       return this.userParams
     }
     return;
   }
   getMembers(userParams: UserParams) {
+    console.log('this.user', this.user)
+    this.a=this.a+1;
+    console.log('total count',this.a)
+
+    console.log('start',this.memberCache)
     const response = this.memberCache.get(Object.values(userParams).join('-'));
     if (response) return of(response);
     let params = this.getPaginationHeaders(userParams.pageNumber, userParams.pageSize);
@@ -56,6 +60,9 @@ export class MembersService {
     return this.getPaginatedResult<Member[]>(this.baseUrl + 'users', params).pipe(
       map(response => {
         this.memberCache.set(Object.values(userParams).join('-'), response);
+        console.log('askapi',this.memberCache);
+        //console.log('Object.values(userParams).join(\'-\')--set',Object.values(userParams).join('-'))
+        //console.log('response',response)
         return response;
       }))
   }

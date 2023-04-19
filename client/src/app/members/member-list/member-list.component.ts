@@ -40,7 +40,7 @@ export class MemberListComponent implements OnInit {
         next: response => {
           if (response.result && response.pagination) {
             this.members = response.result;
-            this.pagination = response.pagination
+            this.pagination = {...response.pagination}
           }
         }
       })
@@ -55,6 +55,7 @@ export class MemberListComponent implements OnInit {
 
     if (this.userParams && this.userParams.pageNumber !== event.page) {
       this.userParams.pageNumber = event.page;
+      this.memberService.setUserParams(this.userParams)
       this.loadMembers();
     }
   }
