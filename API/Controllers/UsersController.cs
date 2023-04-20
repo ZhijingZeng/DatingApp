@@ -74,7 +74,7 @@ namespace API.Controllers
             if(user.Photos.Count ==0) photo.IsMain = true;
             user.Photos.Add(photo);
             if(await _userRepository.SaveAllAsync()) {
-                return CreatedAtAction(nameof(GetUser), //can call endpoint as Actions
+                return CreatedAtAction(nameof(GetUser), //can call endpoint as Actions, in the header
                 new {username = user.UserName}, _mapper.Map<PhotoDto>(photo));
                 //return back how can we get this newly created photo
             }

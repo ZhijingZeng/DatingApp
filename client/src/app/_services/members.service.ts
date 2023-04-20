@@ -12,7 +12,6 @@ import { User } from '../_models/user';
   providedIn: 'root'
 })
 export class MembersService {
-  a=0;
   baseUrl = environment.apiUrl
   members: Member[] = [];
   private memberCache = new Map(); //storing in key value
@@ -45,11 +44,6 @@ export class MembersService {
     return;
   }
   getMembers(userParams: UserParams) {
-    console.log('this.user', this.user)
-    this.a=this.a+1;
-    console.log('total count',this.a)
-
-    console.log('start',this.memberCache)
     const response = this.memberCache.get(Object.values(userParams).join('-'));
     if (response) return of(response);
     let params = this.getPaginationHeaders(userParams.pageNumber, userParams.pageSize);
@@ -60,11 +54,14 @@ export class MembersService {
     return this.getPaginatedResult<Member[]>(this.baseUrl + 'users', params).pipe(
       map(response => {
         this.memberCache.set(Object.values(userParams).join('-'), response);
-        console.log('askapi',this.memberCache);
-        //console.log('Object.values(userParams).join(\'-\')--set',Object.values(userParams).join('-'))
-        //console.log('response',response)
         return response;
       }))
+  }
+  private getPaginationHeaders(pageNumber: number, pageSize: number) {
+    let params = new HttpParams(); //set query string along with our http request
+    params = params.append('pageNumber', pageNumber);
+    params = params.append('pageSize', pageSize);
+    return params;
   }
 
   private getPaginatedResult<T>(url: string, params: HttpParams) {
@@ -84,12 +81,6 @@ export class MembersService {
     );
   }
 
-  private getPaginationHeaders(pageNumber: number, pageSize: number) {
-    let params = new HttpParams(); //set query string along with our http request
-    params = params.append('pageNumber', pageNumber);
-    params = params.append('pageSize', pageSize);
-    return params;
-  }
 
   getMember(username: string) {
     const member = [...this.memberCache.values()]//still has result and pagination
@@ -121,7 +112,15 @@ export class MembersService {
   deletePhoto(photoId: number) {
     return this.http.delete(this.baseUrl + 'users/delete-photo/' + photoId);
   }
-
+  addLike(username: string){
+    console.log('addLike_service')
+    return this.http.post(this.baseUrl + 'likes/'+username,{});
+  }
+  getLikes(predicate: string, pageNumber:number,pageSize:number) {
+    let params = this.getPaginationHeaders(pageNumber,pageSize);
+    params=params.append('predicate',predicate);
+    return this.getPaginatedResult<Member[]>(this.baseUrl +'likes' , params);
+  }
 
 
 }
