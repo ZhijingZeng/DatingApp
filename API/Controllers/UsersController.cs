@@ -145,6 +145,8 @@ namespace API.Controllers
 //401 unauthorized. No Idea who you are
 //403 forbidden know who you are but you donot have the permission(basic user sent an api key but do not have the permission to the admin credencial)
 //404 not found there is no api you are looking for
+
+
 //5** server error
 
 

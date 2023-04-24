@@ -13,7 +13,7 @@ import { MembersService } from 'src/app/_services/members.service';
   styleUrls: ['./member-edit.component.css']
 })
 export class MemberEditComponent implements OnInit {
-  @ViewChild('editForm') editForm: NgForm | undefined //we we construct this component, it can be undefined
+  @ViewChild('editForm') editForm: NgForm | undefined //we construct this component, it can be undefined
   @HostListener('window:beforeunload',['$event']) unloadNotification($event:any){
     if(this.editForm?.dirty){
       $event.returnValue=true;
