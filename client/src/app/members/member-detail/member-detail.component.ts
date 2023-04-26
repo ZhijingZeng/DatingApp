@@ -37,7 +37,7 @@ export class MemberDetailComponent implements OnInit {
     })
     this.route.queryParams.subscribe({
       next: params =>{
-        params['tab'] && this.selectTab(params['tab'])
+        params['tab'] && this.selectTab(params['tab']) //if(params['tab']) this.selectTab(params['tab'])
       }
     })
     this.galleryOptions = [

@@ -17,6 +17,7 @@ export class RegisterComponent implements OnInit {
 
   registerForm: FormGroup = new FormGroup({})
   private destroy$ = new ReplaySubject<boolean>(1);
+  // The replaySubject will help to keep the component in an destroyed state even if you try to use any of the observable after ngOnDestroy has already been called. 
   maxDate: Date = new Date();
   validationErrors: string[] | undefined
   constructor(private accountService:AccountService,private toastr: ToastrService, 
@@ -49,7 +50,8 @@ export class RegisterComponent implements OnInit {
       password: ['',[Validators.required,Validators.minLength(4),Validators.maxLength(8)]],
       confirmPassword: ['',[Validators.required, this.matchValues('password')]]
     })
-//FormControl are input
+    //FormControl are input
+    //https://rxjs.dev/api/operators/takeUntil
     this.registerForm.controls['password'].valueChanges.pipe(takeUntil(this.destroy$))
     .subscribe({
       next: () => this.registerForm.controls['confirmPassword'].updateValueAndValidity()

@@ -5,6 +5,7 @@ using API.Helpers;
 using API.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -22,6 +23,9 @@ namespace API.Controllers
             _userRepository = userRepository;
         }
         //[AllowAnonymous]
+        //[Authorize(Roles = "Admin")] //to overwite the Authorize that at the top of the class
+        //a member trying to go through --401 forbidden not 403 unauthorized.
+        //Becasue we have authenticated just not authorized to do this job
         [HttpGet]
         public async Task<ActionResult<PagedList<MemberDto>>> GetUsers([FromQuery]UserParams userParams)
         //client will send userParams from query string, we need to specify where api will need to look 
@@ -41,7 +45,7 @@ namespace API.Controllers
 
         }
         // add another method for getting indivitual user
-        
+        //[Authorize(Roles = "Member,Admin")]
         [HttpGet("{username}")]
         public async Task<ActionResult<MemberDto>> GetUser(string username)
         {
