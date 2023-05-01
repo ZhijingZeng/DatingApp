@@ -18,14 +18,12 @@ namespace API.Extensions
 
             services.AddCors();
             services.AddScoped<ITokenService, TokenService>();
-            services.AddScoped<IUserRepository, UserRepository>();
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.Configure<CloudinarySettings>(config.GetSection("CloudinarySettings"));
             services.AddScoped<IPhotoService,PhotoService>();
             services.AddScoped<LogUserActivity>();
-            services.AddScoped<ILikesRepository,LikesRepository>();
-            services.AddScoped<IMessageRepository,MessageRepository>();
             services.AddSingleton<PresenceTracker>(); // do not want this to be destroyed once an HTTP request has been completed for instance, we need this to live as long as our application does 
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddSignalR();
         }
     }

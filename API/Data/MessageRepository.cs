@@ -80,9 +80,10 @@ namespace API.Data
 
         public async Task<IEnumerable<MessageDto>> GetMessageThread(string currentUserName, string recipientUserName)
         {
-            var messages = await _context.Messages
-            .Include(u=>u.Sender).ThenInclude(p=>p.Photos)
-            .Include(u=>u.Recipient).ThenInclude(p=>p.Photos)
+            //using projection we don't need to eagerly load the adavert related entities
+            var query =  _context.Messages
+            //.Include(u=>u.Sender).ThenInclude(p=>p.Photos)
+            //.Include(u=>u.Recipient).ThenInclude(p=>p.Photos)
             .Where(
                 m =>(m.RecipientUsername == currentUserName && !m.RecipientDeleted &&
                 m.SenderUsername == recipientUserName) ||
@@ -90,18 +91,18 @@ namespace API.Data
                 m.SenderUsername == currentUserName)
             )
             .OrderBy(m=>m.MessageSent)
-            .ToListAsync(); //got messages in the memory
+            .AsQueryable();
+           
 
-            var unreadMessages = messages.Where(m=>m.DateRead == null && m.RecipientUsername == currentUserName).ToList();
+            var unreadMessages = await query.Where(m=>m.DateRead == null && m.RecipientUsername == currentUserName).ToListAsync();
             if(unreadMessages.Any())
             {
                 foreach(var message in unreadMessages)
                 {
                     message.DateRead = DateTime.UtcNow;//a bug in entityFramework for years, UTC time does not seem to work
                 }
-                await _context.SaveChangesAsync();
             }
-            return _mapper.Map<IEnumerable<MessageDto>>(messages);
+            return await query.ProjectTo<MessageDto>(_mapper.ConfigurationProvider).ToListAsync();//using projection we don't need to eagerly load the adavert related entities
         }
 
         public void RemoveConnection(Connection connection)
@@ -109,9 +110,5 @@ namespace API.Data
             _context.Connections.Remove(connection);
         }
 
-        public async Task<bool> SaveAllAsync()   
-        {
-            return await _context.SaveChangesAsync()>0;
-        }
     }
 }
