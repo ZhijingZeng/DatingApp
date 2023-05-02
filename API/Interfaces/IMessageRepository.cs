@@ -1,4 +1,5 @@
 using System.Reflection;
+using API.DTOs;
 using API.Entities;
 using API.Helpers;
 
@@ -10,8 +11,8 @@ namespace API.Interfaces
         void DeleteMessage(Message message);
         Task<Message> GetMessage(int id);
         Task<PagedList<MessageDto>> GetMessagesForUser(MessageParams messageParams);
-        Task<IEnumerable<MessageDto>> GetMessageThread(string currentUserName, string recipientUserName);
-
+        Task<MessageAndUnreadNum> GetMessageThread(string currentUserName, string recipientUserName);
+        Task<int> GetUnreadMessagesNumber(string username);
 
         void AddGroup(Group group);
         void RemoveConnection(Connection connection);

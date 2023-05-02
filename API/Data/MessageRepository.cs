@@ -1,3 +1,4 @@
+using API.DTOs;
 using API.Entities;
 using API.Helpers;
 using API.Interfaces;
@@ -77,8 +78,15 @@ namespace API.Data
             var messages = query.ProjectTo<MessageDto>(_mapper.ConfigurationProvider);
             return await PagedList<MessageDto>.CreateAsync(messages,messageParams.PageNumber,messageParams.PageSize);
         }
+        public async Task<int> GetUnreadMessagesNumber(string username)
+        {
+            var query = _context.Messages.Where(u=>u.RecipientUsername == username && u.DateRead == null
+                    && u.RecipientDeleted == false).AsQueryable();
+            var unreadMessages =  await query.ToListAsync();
+            return unreadMessages.Count;
+        }
 
-        public async Task<IEnumerable<MessageDto>> GetMessageThread(string currentUserName, string recipientUserName)
+        public async Task<MessageAndUnreadNum> GetMessageThread(string currentUserName, string recipientUserName)
         {
             //using projection we don't need to eagerly load the adavert related entities
             var query =  _context.Messages
@@ -95,14 +103,22 @@ namespace API.Data
            
 
             var unreadMessages = await query.Where(m=>m.DateRead == null && m.RecipientUsername == currentUserName).ToListAsync();
+            var unreadNums =0;
             if(unreadMessages.Any())
             {
+                
                 foreach(var message in unreadMessages)
                 {
                     message.DateRead = DateTime.UtcNow;//a bug in entityFramework for years, UTC time does not seem to work
+                    unreadNums++;
                 }
             }
-            return await query.ProjectTo<MessageDto>(_mapper.ConfigurationProvider).ToListAsync();//using projection we don't need to eagerly load the adavert related entities
+            var messages = await query.ProjectTo<MessageDto>(_mapper.ConfigurationProvider).ToListAsync();//using projection we don't need to eagerly load the adavert related entities
+            return new MessageAndUnreadNum
+            { 
+                messageDtos = messages,
+                unreadNum = unreadNums
+            };
         }
 
         public void RemoveConnection(Connection connection)

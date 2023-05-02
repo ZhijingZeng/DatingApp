@@ -30,9 +30,20 @@ namespace API.SignalR
             await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
             var group = await AddToGroup(groupName);
             await Clients.Group(groupName).SendAsync("UpdatedGroup",group);
-            var messages = await _uow.MessageRepository.GetMessageThread(Context.User.GetUsername(),otherUser);
-            if(_uow.HasChanges()) await _uow.Complete();
-            await Clients.Caller.SendAsync("ReceiveMessageThread", messages);
+            MessageAndUnreadNum messagesAndNum = await _uow.MessageRepository.GetMessageThread(Context.User.GetUsername(),otherUser);
+            await Clients.Caller.SendAsync("ReceiveMessageThread", messagesAndNum.messageDtos);
+            if(_uow.HasChanges()) 
+            {
+                await _uow.Complete();
+                var connections = await PresenceTracker.GetConnectionsForUser(Context.User.GetUsername());
+                if(connections != null)
+                {
+                    var unread = messagesAndNum.unreadNum;
+                    await _presenceHub.Clients.Clients(connections).SendAsync("ReadMessages", unread);
+                }
+                //send to all connectionID            
+            }
+
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)

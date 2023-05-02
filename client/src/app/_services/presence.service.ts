@@ -14,6 +14,8 @@ export class PresenceService {
   private hubConnection?:HubConnection//we are not gonna have it when we initially access this server => getting it from SignalR
   private onlineUsersSource = new BehaviorSubject<string[]>([]) //behaviorSubject can have an initial value here it is an empty string
   onlineUsers$ = this.onlineUsersSource.asObservable();
+  public unreadMessagesNumSource = new BehaviorSubject<number>(0) //behaviorSubject can have an initial value here it is an empty string
+  unreadMessagesNum$ = this.unreadMessagesNumSource.asObservable();
   constructor(private toastr: ToastrService, private router: Router) { }
 // difference between observable and subject
 //https://www.youtube.com/watch?v=Zr3kwMiAfRE
@@ -35,7 +37,7 @@ export class PresenceService {
       })
 
       this.hubConnection.on('UserIsOffline', username=>{
-        this.toastr.warning(username + ' has disconnected');
+        //this.toastr.warning(username + ' has disconnected');
         this.onlineUsers$.pipe(take(1)).subscribe({
           next: usernames=> this.onlineUsersSource.next(usernames.filter(x => x!==username ))//filter method creates a new array
         })
@@ -52,6 +54,26 @@ export class PresenceService {
           this.router.navigateByUrl('/RefreshComponent', { skipLocationChange: true }) // a trick to reload member detail component
           //when at member-detail, (ex at the info page), we cannot go to messages tab
             .then(() => {this.router.navigateByUrl('/members/' + username + '?tab=Messages')})
+        })
+
+        this.unreadMessagesNum$.pipe(take(1))
+        .subscribe({
+          next:unreadNum=> this.unreadMessagesNumSource.next(unreadNum+1)
+        })
+
+      })
+
+
+      this.hubConnection.on('GetUnreadMessagesNumber',unreadNum =>{
+        this.unreadMessagesNumSource.next(unreadNum);
+      })
+
+      this.hubConnection.on('ReadMessages', unreadNum =>{
+
+        this.unreadMessagesNum$.pipe(take(1)).subscribe({
+          next: LastunreadNum=>{
+            this.unreadMessagesNumSource.next(LastunreadNum-unreadNum)
+          }
         })
       })
       

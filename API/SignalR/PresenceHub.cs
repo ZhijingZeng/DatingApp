@@ -1,6 +1,9 @@
 using API.Extensions;
+using API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.VisualBasic;
+
 namespace API.SignalR
 {
     [Authorize] //we only want authorized user to access this specific hub
@@ -9,10 +12,12 @@ namespace API.SignalR
     public class PresenceHub : Hub//get who is present
     {
         private readonly PresenceTracker _tracker;
+        private readonly IUnitOfWork _uow;
 
-        public PresenceHub(PresenceTracker tracker)
+        public PresenceHub(PresenceTracker tracker, IUnitOfWork uow)
         {
-            this._tracker = tracker;
+            _uow = uow;
+            _tracker = tracker;
         }
         public override async Task OnConnectedAsync()
         {
@@ -22,6 +27,8 @@ namespace API.SignalR
             
             var currentUsers = await _tracker.GetOnlineUsers();
             await Clients.Caller.SendAsync("GetOnlineUsers",currentUsers);
+            var UnreadNum = await _uow.MessageRepository.GetUnreadMessagesNumber(Context.User.GetUsername());
+            await Clients.Caller.SendAsync("GetUnreadMessagesNumber",UnreadNum);
         }
         public override async Task OnDisconnectedAsync(Exception exception)
         {

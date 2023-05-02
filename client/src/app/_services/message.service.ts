@@ -7,6 +7,7 @@ import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 import { User } from '../_models/user';
 import { BehaviorSubject, take } from 'rxjs';
 import { Group } from '../_models/group';
+import { PresenceService } from './presence.service';
 
 @Injectable({
   providedIn: 'root'
@@ -31,6 +32,7 @@ export class MessageService {
 
       this.hubConnection.start().catch(error => console.log(error))
       this.hubConnection.on('ReceiveMessageThread', messages =>{
+        console.log('REceive')
         this.messageThreadSource.next(messages)
       })
 
@@ -56,6 +58,8 @@ export class MessageService {
         })
       }
     })
+
+
   }
 
   stopHubConnecction(){

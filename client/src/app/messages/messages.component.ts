@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { Message } from '../_models/message';
 import { Pagination } from '../_models/pagination';
 import { MessageService } from '../_services/message.service';
+import { PresenceService } from '../_services/presence.service';
+import { take } from 'rxjs';
 
 @Component({
   selector: 'app-messages',
@@ -17,7 +19,7 @@ export class MessagesComponent implements OnInit {
   loading = false
   
 
-  constructor(private messageService : MessageService) { }
+  constructor(private messageService : MessageService, private presenceService: PresenceService) { }
 
   ngOnInit(): void {
     this.loadMessages();
@@ -36,6 +38,9 @@ export class MessagesComponent implements OnInit {
   deleteMessage(id: number){
     this.messageService.deleteMessage(id).subscribe({
       next: _=>this.messages?.splice(this.messages?.findIndex(m=>m.id ===id),1)
+    })
+    this.presenceService.unreadMessagesNum$.pipe(take(1)).subscribe({
+      next: unreadNum=>this.presenceService.unreadMessagesNumSource.next(unreadNum-1)
     })
   }
 
