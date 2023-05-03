@@ -21,13 +21,17 @@ namespace API.Data
             
         }
 
-        public async Task<MemberDto> GetMemberAsync(string username)
+        public async Task<MemberDto> GetMemberAsync(string username, string currentUsername)
         {
-            
-            return await _context.Users
+            var query = _context.Users
                 .Where(x => x.UserName == username)
-                .ProjectTo<MemberDto>(_mapper.ConfigurationProvider)//help to eagerly load the related entites
-                .SingleOrDefaultAsync();
+                .ProjectTo<MemberDto>(_mapper.ConfigurationProvider);//help to eagerly load the related entites
+            if (username == currentUsername)
+            {
+                query = query.IgnoreQueryFilters();
+            }
+            return await query.SingleOrDefaultAsync(); 
+                
         }
 
         public async Task<PagedList<MemberDto>> GetMembersAsync(UserParams userParams) //pagination

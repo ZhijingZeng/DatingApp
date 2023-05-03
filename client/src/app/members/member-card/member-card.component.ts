@@ -17,16 +17,10 @@ export class MemberCardComponent implements OnInit {
       public presenceService: PresenceService) { }
 
   ngOnInit(): void {
-    this.presenceService.onlineUsers$.subscribe({
-      next: users=>{
-        users.forEach(user=>console.log(user))  
-        }
-      }
-    )
+    
   }
 
   addLike(member: Member){
-    console.log('addLike')
     this.memberService.addLike(member.userName).subscribe({
       next:() =>this.toastr.success('You have liked '+ member.knownAs)
     })

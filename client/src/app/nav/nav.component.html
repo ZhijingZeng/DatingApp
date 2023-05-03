@@ -19,7 +19,9 @@
               <!-- <div *ngIf="presenceService.unreadMessagesNum$ | async" class="badge badge-pill badge-warning">
                 <span >{{presenceService.unreadMessagesNum$ | async}}</span>
               </div> -->
-              <span *ngIf="(presenceService.unreadMessagesNum$ | async) As unreadNum && unreadNum>0" class="badge badge-pill bg-warning">{{presenceService.unreadMessagesNum$ | async}}</span>
+              <div *ngIf="(presenceService.unreadMessagesNum$ | async) as unread" class="badge badge-pill bg-warning">
+                <span *ngIf="unread>0">{{presenceService.unreadMessagesNum$ | async}}</span>
+              </div>
           </a>
         </li>
         <li *appHasRole="['Admin','Moderator']" class="nav-item">

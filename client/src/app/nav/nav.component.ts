@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { User } from '../_models/user';
 import { AccountService } from '../_services/account.service';
@@ -12,6 +12,7 @@ import { PresenceService } from '../_services/presence.service';
   styleUrls: ['./nav.component.css']
 })
 export class NavComponent implements OnInit {
+
   model:any={};
  // currentUser$: Observable<User|null> =of(null); // to init a observable
   constructor(public accountService: AccountService, private router: Router,private toastr: ToastrService, public presenceService: PresenceService) { }

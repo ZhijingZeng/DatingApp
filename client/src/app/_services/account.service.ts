@@ -19,7 +19,7 @@ export class AccountService {
       (this.baseUrl+'account/login',model).pipe(
         map((response: User)=>{
           const user = response;
-          console.log(user);// when logged in, we can see the user at the console
+          
           if(user){
             this.setCurrentUser(user);
           }

@@ -13,6 +13,7 @@
       "Country": "Suriname",
       "Photos": [
         {
+          "isApproved": true,
           "url": "https://randomuser.me/api/portraits/women/64.jpg",
           "isMain": true
         }
@@ -32,6 +33,7 @@
       "Country": "Bhutan",
       "Photos": [
         {
+          "isApproved": true,
           "url": "https://randomuser.me/api/portraits/women/90.jpg",
           "isMain": true
         }
@@ -51,6 +53,7 @@
       "Country": "Somalia",
       "Photos": [
         {
+          "isApproved": true,
           "url": "https://randomuser.me/api/portraits/women/54.jpg",
           "isMain": true
         }
@@ -70,6 +73,7 @@
       "Country": "Cameroon",
       "Photos": [
         {
+          "isApproved": true,
           "url": "https://randomuser.me/api/portraits/women/81.jpg",
           "isMain": true
         }
@@ -89,6 +93,7 @@
       "Country": "Czech Republic",
       "Photos": [
         {
+          "isApproved": true,
           "url": "https://randomuser.me/api/portraits/women/98.jpg",
           "isMain": true
         }
@@ -108,6 +113,7 @@
         "Country": "Cape Verde",
         "Photos": [
           {
+            "isApproved": true,
             "url": "https://randomuser.me/api/portraits/men/53.jpg",
             "isMain": true
           }
@@ -127,6 +133,7 @@
         "Country": "Anguilla",
         "Photos": [
           {
+            "isApproved": true,
             "url": "https://randomuser.me/api/portraits/men/34.jpg",
             "isMain": true
           }
@@ -146,6 +153,7 @@
         "Country": "Pitcairn",
         "Photos": [
           {
+            "isApproved": true,
             "url": "https://randomuser.me/api/portraits/men/66.jpg",
             "isMain": true
           }
@@ -165,6 +173,7 @@
         "Country": "Falkland Islands (Malvinas)",
         "Photos": [
           {
+            "isApproved": true,
             "url": "https://randomuser.me/api/portraits/men/61.jpg",
             "isMain": true
           }
@@ -184,6 +193,7 @@
         "Country": "Papua New Guinea",
         "Photos": [
           {
+            "isApproved": true,
             "url": "https://randomuser.me/api/portraits/men/20.jpg",
             "isMain": true
           }

@@ -68,7 +68,7 @@ namespace API.Controllers
             if(message.SenderUsername != username && message.RecipientUsername != username)
                 return Unauthorized();
 
-            if(message.SenderUsername ==username) message.SenderDeleted = true;
+            if(message.SenderUsername == username) message.SenderDeleted = true;
             if(message.RecipientUsername ==username) message.RecipientDeleted = true;
 
             if(message.SenderDeleted && message.RecipientDeleted) 
