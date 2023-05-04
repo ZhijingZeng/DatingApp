@@ -13,32 +13,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddIdentityServices(builder.Configuration);
-var connString="";
-if (builder.Environment.IsDevelopment()) 
-    connString = builder.Configuration.GetConnectionString("DefaultConnection");
-else 
-{
-// Use connection string provided at runtime by FLYIO.
-        var connUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-
-        // Parse connection URL to connection string for Npgsql
-        connUrl = connUrl.Replace("postgres://", string.Empty);
-        var pgUserPass = connUrl.Split("@")[0];
-        var pgHostPortDb = connUrl.Split("@")[1];
-        var pgHostPort = pgHostPortDb.Split("/")[0];
-        var pgDb = pgHostPortDb.Split("/")[1];
-        var pgUser = pgUserPass.Split(":")[0];
-        var pgPass = pgUserPass.Split(":")[1];
-        var pgHost = pgHostPort.Split(":")[0];
-        var pgPort = pgHostPort.Split(":")[1];
-	var updatedHost = pgHost.Replace("flycast", "internal");
-
-        connString = $"Server={updatedHost};Port={pgPort};User Id={pgUser};Password={pgPass};Database={pgDb};";
-}
-builder.Services.AddDbContext<DataContext>(opt =>
-{
-    opt.UseNpgsql(connString);
-});
 
 
 var app = builder.Build();
@@ -54,14 +28,11 @@ app.UseCors(builder => builder.AllowAnyHeader()
 app.UseAuthentication(); // do you have a valid token
 app.UseAuthorization(); // authorize the endpoint you can go
 
-app.UseDefaultFiles();
-app.UseStaticFiles();
 
 app.MapControllers();
 
 app.MapHub<PresenceHub>("hubs/presence"); //how do the client find the hub(give a route)
 app.MapHub<MessageHub>("hubs/message"); //how do the client find the hub(give a route)
-app.MapFallbackToController("index","Fallback");//specify the method in the controller and the name of the controller
 using var scope = app.Services.CreateScope();
 var services=scope.ServiceProvider;
 try{
@@ -71,11 +42,9 @@ try{
     await context.Database.MigrateAsync();
     //context.Connections.RemoveRange(context.Connections); //this is for small scale database
     //await context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE [Connections]");
-    //await context.Database.ExecuteSqlRawAsync("DELETE FROM [Connections]"); //sqlite
-    //await context.Database.ExecuteSqlRawAsync("DELETE FROM /"Connections]/""); 
+    await context.Database.ExecuteSqlRawAsync("DELETE FROM [Connections]");
     //truncate is good, but for sqlite specificly,not good
     //be careful using this, directly using sql without using entityframework
-    await Seed.ClearConnections(context);
     await Seed.SeedUsers(userManager,roleManager);
 
 }
